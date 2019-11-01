@@ -9,7 +9,7 @@ def euclidean_distance(x, y):
  	return distance
 
 def cosine_similarity(x, y):
-	similarity = sum([(a * b) for a, b in zip(x, y)]) / (math.sqrt(sum([a ** 2 for a in x])) + math.sqrt(sum([b ** 2 for b in y])))
+	similarity = sum([(a * b) for a, b in zip(x, y)]) / (math.sqrt(sum([a ** 2 for a in x])) * math.sqrt(sum([b ** 2 for b in y])))
 	return similarity
 
 def run():
