@@ -32,7 +32,7 @@ def extract_features(image_path, vector_size=32):
             # end of our feature vector
             dsc = np.concatenate([dsc, np.zeros(needed_size - dsc.size)])
     except cv2.error as e:
-        print 'Error: ', e
+        print ('Error: ', e)
         return None
 
     return dsc
@@ -43,7 +43,7 @@ def batch_extractor(images_path, pickled_db_path="features.pck"):
 
     result = {}
     for f in files:
-        print 'Extracting features from image %s' % f
+        print ('Extracting features from image %s' % f)
         name = f.split('/')[-1].lower()
         result[name] = extract_features(f)
     
@@ -78,10 +78,10 @@ class Matcher(object):
 
         return nearest_img_paths, img_distances[nearest_ids].tolist()
 
-        def show_img(path):
-    img = imread(path, mode="RGB")
-    plt.imshow(img)
-    plt.show()
+    def show_img(path):
+        img = imread(path, mode="RGB")
+        plt.imshow(img)
+        plt.show()
     
 def run():
     images_path = 'resources/images/'
@@ -94,14 +94,14 @@ def run():
     ma = Matcher('features.pck')
     
     for s in sample:
-        print 'Query image =========================================='
+        print ('Query image ==========================================')
         show_img(s)
         names, match = ma.match(s, topn=3)
-        print 'Result images ========================================'
+        print ('Result images ========================================')
         for i in range(3):
             # we got cosine distance, less cosine distance between vectors
             # more they similar, thus we subtruct it from 1 to get match value
-            print 'Match %s' % (1-match[i])
+            print ('Match %s' % (1-match[i]))
             show_img(os.path.join(images_path, names[i]))
 
 run()
