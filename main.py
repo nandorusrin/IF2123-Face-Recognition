@@ -83,7 +83,6 @@ class Matcher(object):
             img_distances = self.euclidean_distance(features)
         else:
             img_distances = self.cosine_similarity(features)
-            print('Cosine Similarity')
         # getting top 5 records
         nearest_ids = np.argsort(img_distances)[:topn].tolist()
         nearest_img_paths = self.names[nearest_ids].tolist()
@@ -102,13 +101,10 @@ class Matcher(object):
         for i in range(len(v1)):
             for j in range(len(v1)):
                 x = v1[i][j]; y = v2[j]
-                sumxx += x**2
-                sumyy += y**2
-                if (x*y < 0):
-                    sumxy -= x*y
-                else:
-                    sumxy += x*y
-                similarity.append(sumxy/(math.sqrt(sumxx)*math.sqrt(sumyy)))
+                sumxx += x*x
+                sumyy += y*y
+                sumxy += x*y
+                similarity.append(sumxy/math.sqrt(sumxx)*math.sqrt(sumyy))
         similarity = np.array(similarity)
         return similarity
 
