@@ -116,6 +116,6 @@ def run():
             # we got cosine distance, less cosine distance between vectors
             # more they similar, thus we subtruct it from 1 to get match value
             print ('Match %s' % (1-match[i]))
-            show_img(os.path.join(images_path, names[i]))
+            show_img(os.path.join(names[i]))
 
 run()
