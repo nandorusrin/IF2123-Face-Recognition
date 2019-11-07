@@ -9,6 +9,7 @@ import pickle
 import random
 import os
 import matplotlib.pyplot as plt
+import math
 
 # Feature extractor
 def extract_features(image_path, vector_size=32):
@@ -75,21 +76,59 @@ class Matcher(object):
         v = vector.reshape(1, -1)
         return scipy.spatial.distance.cdist(self.matrix, v, 'cosine').reshape(-1)
 
-    def match(self, image_path, topn=5):
+    def match(self, image_path, match_type, topn=5):
         features = extract_features(image_path)
-        img_distances = self.cos_cdist(features)
+        #img_distances = self.cos_cdist(features)
+        if (match_type == "N"):
+            img_distances = self.euclidean_distance(features)
+        else:
+            img_distances = self.cosine_similarity(features)
+            print('Cosine Similarity')
         # getting top 5 records
         nearest_ids = np.argsort(img_distances)[:topn].tolist()
         nearest_img_paths = self.names[nearest_ids].tolist()
         return nearest_img_paths, img_distances[nearest_ids].tolist()
     
-    def euclidean_distance(x, y):
-        distance = math.sqrt(sum([(a - b) ** 2 for a, b in zip(x, y)]))
-        return distance
-
-    def cosine_similarity(x, y):
-        similarity = sum([(a * b) for a, b in zip(x, y)]) / (math.sqrt(sum([a ** 2 for a in x])) * math.sqrt(sum([b ** 2 for b in y])))
+    def cosine_similarity(self, vector):
+        # getting cosine distance between search image and images database
+        v = []
+        similarity = []
+        print(vector)
+        for k in vector:
+            v.append(k)
+        v1 = self.matrix
+        v2 = v
+        sumxx, sumxy, sumyy = 0, 0, 0
+        for i in range(len(v1)):
+            for j in range(len(v1)):
+                x = v1[i][j]; y = v2[j]
+                sumxx += x**2
+                sumyy += y**2
+                if (x*y < 0):
+                    sumxy -= x*y
+                else:
+                    sumxy += x*y
+                similarity.append(sumxy/(math.sqrt(sumxx)*math.sqrt(sumyy)))
+        similarity = np.array(similarity)
         return similarity
+
+    def euclidean_distance(self, vector):
+        # getting cosine distance between search image and images database
+        v = []
+        distance = []
+        print(vector)
+        for k in vector:
+            v.append(k)
+        v1 = self.matrix
+        v2 = v
+        subxy = 0
+        for i in range(len(v1)):
+            for j in range(len(v1)):
+                x = v1[i][j]; y = v2[j]
+                subxy += (x-y)**2
+                distance.append(math.sqrt(subxy))
+        distance = np.array(distance)
+        return distance
 
 def show_img(path):
     img = imread(path, pilmode="RGB")
@@ -101,7 +140,11 @@ def run():
     images_path = 'resources\images'
     files = [os.path.join(images_path, p) for p in sorted(os.listdir(images_path))]
     # getting 3 random images 
-    sample = random.sample(files, 3)
+    M = int(input('Samples: '))
+    N = int(input('Matches: '))
+    match_type = str(input('Use Cosine Similarity? (Y/N): '))
+    #sample = random.sample(files, 3)
+    sample = random.sample(files, M)
     
     batch_extractor(images_path)
 
@@ -110,9 +153,11 @@ def run():
     for s in sample:
         print ('Query image ==========================================')
         show_img(s)
-        names, match = ma.match(s, topn=3)
+        #names, match = ma.match(s, topn=3)
+        names, match = ma.match(s, match_type, topn=N)
         print ('Result images ========================================')
-        for i in range(3):
+        for i in range(N):
+            #for i in range(N)
             # we got cosine distance, less cosine distance between vectors
             # more they similar, thus we subtruct it from 1 to get match value
             print ('Match %s' % (1-match[i]))
