@@ -81,7 +81,8 @@ class Matcher(object):
         return nearest_img_paths, img_distances[nearest_ids].tolist()
 
 def show_img(path):
-    img = imread(path, mode="RGB")
+    #img = imread(path, mode="RGB")
+    img = imread(path)
     plt.imshow(img)
     plt.show()
     
