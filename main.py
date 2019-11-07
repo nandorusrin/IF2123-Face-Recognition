@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import scipy
 #from scipy.misc import imread
-from matplotlib.pyplot import imread
+from imageio import imread
 #import cPickle as pickle
 import pickle
 import random
@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 
 # Feature extractor
 def extract_features(image_path, vector_size=32):
-    #image = imread(image_path, mode="RGB")
-    image = imread(image_path)
+    image = imread(image_path, pilmode="RGB")
+    #image = imread(image_path)
     try:
         # Using KAZE, cause SIFT, ORB and other was moved to additional module
         # which is adding addtional pain during install
@@ -79,10 +79,18 @@ class Matcher(object):
         nearest_ids = np.argsort(img_distances)[:topn].tolist()
         nearest_img_paths = self.names[nearest_ids].tolist()
         return nearest_img_paths, img_distances[nearest_ids].tolist()
+    
+    def euclidean_distance(x, y):
+        distance = math.sqrt(sum([(a - b) ** 2 for a, b in zip(x, y)]))
+        return distance
+
+    def cosine_similarity(x, y):
+        similarity = sum([(a * b) for a, b in zip(x, y)]) / (math.sqrt(sum([a ** 2 for a in x])) * math.sqrt(sum([b ** 2 for b in y])))
+        return similarity
 
 def show_img(path):
-    #img = imread(path, mode="RGB")
-    img = imread(path)
+    img = imread(path, pilmode="RGB")
+    #img = imread(path)
     plt.imshow(img)
     plt.show()
     
