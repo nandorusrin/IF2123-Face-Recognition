@@ -79,7 +79,7 @@ class Matcher(object):
     def match(self, image_path, match_type, topn=5):
         features = extract_features(image_path)
         #img_distances = self.cos_cdist(features)
-        if (match_type == "N"):
+        if (match_type == 'N'):
             img_distances = self.euclidean_distance(features)
         else:
             img_distances = self.cosine_similarity(features)
@@ -101,10 +101,10 @@ class Matcher(object):
         for i in range(len(v1)):
             for j in range(len(v1)):
                 x = v1[i][j]; y = v2[j]
-                sumxx += x*x
-                sumyy += y*y
+                sumxx += x**2
+                sumyy += y**2
                 sumxy += x*y
-                similarity.append(sumxy/math.sqrt(sumxx)*math.sqrt(sumyy))
+                similarity.append(sumxy/(math.sqrt(sumxx))/(math.sqrt(sumyy)))
         similarity = np.array(similarity)
         return similarity
 
