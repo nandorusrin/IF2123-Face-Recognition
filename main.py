@@ -141,36 +141,58 @@ class App(QWidget):
         super().__init__()
         
         self.title = "Face Recognition App"
-        self.window_width = 640
-        self.window_height = 480
+        self.window_width = 840
+        self.window_height = 640
         self.files = []
         self.res = []
+        self.perc = []
         self.match_type = 'Y'
+        self.topn = 1
         self.setFixedSize(self.window_width, self.window_height)
         self.initUI()
 
-    def createLayout_group(self, lst, number):
-        sgroupbox = QGroupBox("Image {}:".format(number + 1), self)
+    def createLayout_group(self, lst, number, inc, perc):
+        if(inc > 0):
+            sgroupbox = QGroupBox("For image {}:".format(inc), self)
+        else:
+            sgroupbox = QGroupBox("Image {}:".format(number + 1), self)
         layout_groupbox = QVBoxLayout(sgroupbox)
-        for l in lst:
-            item = QLabel()
-            item_lst = QPixmap(QCoreApplication.applicationDirPath() + lst)
-            item_lst = item_lst.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation);
-            layout_groupbox.addWidget(item.setPixmap(item_lst))
+        
+        item = QLabel()
+        item2 = QLabel()
+        item_lst = QPixmap(lst)
+        item_lst = item_lst.scaled(item.size() / 2, Qt.KeepAspectRatio, Qt.SmoothTransformation);
+                
+        item.setPixmap(QPixmap(item_lst))
+        item2.setText('Match ' + str(perc) + '%')
+        item2.setFont(QFont('Avenir', 12))
+        
+        layout_groupbox.addWidget(item)
+        if (perc != -1):
+            layout_groupbox.addWidget(item2)
         layout_groupbox.addStretch(1)
         return sgroupbox
 
-    def createLayout_Container(self, lst):
+    def createLayout_Container(self, lst, topn=0):
         self.scrollarea = QScrollArea(self)
         self.scrollarea.setFixedHeight(0.8 * self.window_height)
+        self.scrollarea.setFixedWidth(0.475 * self.window_width)
         self.scrollarea.setWidgetResizable(True)
 
         widget = QWidget()
         self.scrollarea.setWidget(widget)
         self.layout_SArea = QVBoxLayout(widget)
 
+        inc = 0 if topn == 0 else 1
+        
         for i in range(len(lst)):
-            self.layout_SArea.addWidget(self.createLayout_group(lst[i], i))
+            perc = self.perc[i] if topn > 0 else -1
+            
+            self.layout_SArea.addWidget(self.createLayout_group(lst[i], i, inc, perc))
+                        
+            if (topn > 0 and (i + 1) % topn == 0):
+                inc += 1
+                
         self.layout_SArea.addStretch(1)
 
     def initUI(self):
@@ -201,7 +223,6 @@ class App(QWidget):
         self.initEngine()
     
     def initEngine(self):
-        images_path = 'resources\images'
         pins_dir = 'resources\pins-face-recognition'
 
         files_arr = []
@@ -230,10 +251,10 @@ class App(QWidget):
             for f in files:
                 self.files.append(f)
 
-            self.createLayout_Container(self.files)
+            self.createLayout_Container(files)
             self.grid.addWidget(self.scrollarea, 1, 0)
     
-    def run(self):
+    def askCosine(self):
         ret = QMessageBox.question(self,'', "Use Cosine similarity?", QMessageBox.Yes | QMessageBox.No)
         
         if ret == QMessageBox.Yes:
@@ -241,32 +262,40 @@ class App(QWidget):
         else:
             self.match_type = 'N'
             
+    def askTopn(self):
+        i, okPressed = QInputDialog.getInt(self, "Topn","Show how many similar images?", self.topn)
+        if okPressed:
+            self.topn = i
+    
+    def run(self):
+        self.askCosine()
+        self.askTopn()
+        
         ma = Matcher('features.pck')
         
         if not self.files:
             print ('No files selected')
         else:
             self.res = []
+            self.perc = []
 
             for s in self.files:
                 print ('Query image ==========================================')
                 show_img(s)
-                names, match = ma.match(s, self.match_type, topn=3)
+                names, match = ma.match(s, self.match_type, topn=self.topn)
                 print ('Result images ========================================')
-                for i in range(3):
+                for i in range(self.topn):
                     # we got cosine distance, less cosine distance between vectors
                     # more they similar, thus we subtruct it from 1 to get match value
                     print ('Match %s' % (1-match[i]))
+                    self.perc.append(1-match[i])
                     img = os.path.join(names[i])
                     show_img(img)
                     
                     self.res.append(img)
 
-            self.createLayout_Container(self.res)
+            self.createLayout_Container(self.res, self.topn)
             self.grid.addWidget(self.scrollarea, 1, 1)
-            
-            self.files = []
-
             
 def main():
     app = QApplication(sys.argv)
