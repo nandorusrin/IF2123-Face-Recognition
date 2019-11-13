@@ -110,6 +110,7 @@ class Matcher(object):
                 sumxy += x*y
                 similarity.append(sumxy/(math.sqrt(sumxx))/(math.sqrt(sumyy)))
         similarity = np.array(similarity)
+        print(similarity)
         return similarity
 
     def euclidean_distance(self, vector):
@@ -164,8 +165,9 @@ class App(QWidget):
         item_lst = item_lst.scaled(item.size() / 2, Qt.KeepAspectRatio, Qt.SmoothTransformation);
                 
         item.setPixmap(QPixmap(item_lst))
-        item2.setText('Match ' + str(perc) + '%')
-        item2.setFont(QFont('Avenir', 12))
+        item2.setText('Match ' + str(perc))
+        item2.setFont(QFont('Avenir'
+                            , 12))
         
         layout_groupbox.addWidget(item)
         if (perc != -1):
@@ -223,6 +225,7 @@ class App(QWidget):
         self.initEngine()
     
     def initEngine(self):
+#         images_path = 'resources\images'
         pins_dir = 'resources\pins-face-recognition'
 
         files_arr = []
