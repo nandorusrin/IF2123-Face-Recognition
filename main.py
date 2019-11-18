@@ -108,7 +108,7 @@ class Matcher(object):
                 sumxx += x**2
                 sumyy += y**2
                 sumxy += x*y
-                similarity.append(sumxy/(math.sqrt(sumxx))/(math.sqrt(sumyy)))
+                similarity.append(abs(sumxy/(math.sqrt(sumxx))/(math.sqrt(sumyy))))
         similarity = np.array(similarity)
         return similarity
 
